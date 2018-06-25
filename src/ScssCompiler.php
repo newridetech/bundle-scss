@@ -67,7 +67,7 @@ class ScssCompiler
         $filemtime = filemtime($file);
         $oldFilemtime = Cache::get(static::cacheKeyFilemtime($file));
 
-        if (App::environment('local')) {
+        if (App::environment(['local', 'testing'])) {
             $filemtime = max($filemtime, static::filemtimeResources());
         }
 
