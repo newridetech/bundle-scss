@@ -1,5 +1,7 @@
 <?php
 
 return [
-    'resources.path' => 'assets/sass',
+    'resources' => [
+        'path' => 'assets/sass',
+    ],
 ];

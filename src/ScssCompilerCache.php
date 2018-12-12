@@ -31,7 +31,7 @@ class ScssCompilerCache
 
     public function process(string $file, callable $callback): string
     {
-        if (!file_exists($file)) {
+        if (!file_exists($file) || !is_file($file)) {
             throw new FileNotFound($file);
         }
 

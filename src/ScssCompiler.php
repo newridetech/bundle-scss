@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Leafo\ScssPhp\Compiler;
 use Leafo\ScssPhp\Formatter\Compressed;
+use Newride\Scss\Exception\FileNotFound;
 
 class ScssCompiler
 {
@@ -36,22 +37,49 @@ class ScssCompiler
         return $this->route($request->route());
     }
 
-    public function file(string $file): string
+    public function file(string $file, string $fallbackFile = null): string
     {
-        return $this->cache->process($file, function (string $contents) {
+        $processor = function (string $contents) {
             return $this->compiler->compile($contents);
-        });
+        };
+        try {
+            return $this->cache->process($file, $processor);
+        } catch (FileNotFound $e) {
+            if (!is_null($fallbackFile)) {
+                return $this->cache->process($fallbackFile, $processor);
+            }
+
+            throw $e;
+        }
     }
 
-    public function resource(string $file): string
+    public function resource(string $file, string $fallbackResource = null): string
     {
-        return $this->file(resource_path($file));
+        return $this->file(resource_path($file), resource_path($fallbackResource));
     }
 
     public function route(Route $route): string
     {
-        $filename = config('scss.resources.path').'/'.str_replace('.', '-', $routeName).'.scss';
+        return $this->routeName($route->getName());
+    }
 
-        return $this->resource($filename);
+    public function routeName(string $routeName): string
+    {
+        return $this->resource(new RouteFilename($routeName));
+    }
+
+    public function routeNamePatternFallback(array $patterns, string $routeName): string
+    {
+        try {
+            return $this->routeName($routeName);
+        } catch (FileNotFound $e) {
+            foreach ($patterns as $pattern => $resource) {
+                if (fnmatch($pattern, $routeName)) {
+                    return $this->resource($resource);
+                }
+            }
+
+            throw $e;
+        }
     }
 }
