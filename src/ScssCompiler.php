@@ -2,50 +2,24 @@
 
 namespace Newride\Scss;
 
-use App;
-use Cache;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Leafo\ScssPhp\Compiler;
 use Leafo\ScssPhp\Formatter\Compressed;
-use Webmozart\Glob\Iterator\GlobIterator;
 
 class ScssCompiler
 {
-    const RESOURCE_BASE_PATH = 'assets/sass';
+    protected $cache;
 
-    public $compiler;
-
-    public static function cacheKeyCompiled(string $file): string
-    {
-        return 'scss.compiled.'.$file;
-    }
-
-    public static function cacheKeyFilemtime(string $file): string
-    {
-        return 'scss.filemtime.'.$file;
-    }
-
-    public static function filemtimeResources(): int
-    {
-        $filemtime = 0;
-        foreach (new GlobIterator(resource_path(self::RESOURCE_BASE_PATH.'/**/*.scss')) as $file) {
-            $filemtime = max($filemtime, filemtime($file));
-        }
-
-        return $filemtime;
-    }
-
-    public static function routeNameToFileName(string $routeName): string
-    {
-        return self::RESOURCE_BASE_PATH.'/'.str_replace('.', '-', $routeName).'.scss';
-    }
+    protected $compiler;
 
     public function __construct(Compiler $compiler)
     {
+        $this->cache = new ScssCompilerCache();
+
         $this->compiler = $compiler;
         $this->compiler->setFormatter(Compressed::class);
-        $this->compiler->setImportPaths(resource_path(self::RESOURCE_BASE_PATH));
+        $this->compiler->setImportPaths(resource_path(config('scss.resources.path')));
     }
 
     public function asset(string $file): string
@@ -64,23 +38,8 @@ class ScssCompiler
 
     public function file(string $file): string
     {
-        $filemtime = filemtime($file);
-        $oldFilemtime = Cache::get(static::cacheKeyFilemtime($file));
-
-        if (App::environment(['local', 'testing'])) {
-            $filemtime = max($filemtime, static::filemtimeResources());
-        }
-
-        if (empty($oldFilemtime) || $filemtime > $oldFilemtime) {
-            Cache::forget(static::cacheKeyCompiled($file));
-        }
-
-        return Cache::rememberForever(static::cacheKeyCompiled($file), function () use ($file, $filemtime) {
-            Cache::forever(static::cacheKeyFilemtime($file), $filemtime);
-
-            $scss = file_get_contents($file);
-
-            return $this->compiler->compile($scss);
+        return $this->cache->process($file, function (string $contents) {
+            return $this->compiler->compile($contents);
         });
     }
 
@@ -91,8 +50,8 @@ class ScssCompiler
 
     public function route(Route $route): string
     {
-        $name = static::routeNameToFileName($route->getName());
+        $filename = config('scss.resources.path').'/'.str_replace('.', '-', $routeName).'.scss';
 
-        return $this->resource($name);
+        return $this->resource($filename);
     }
 }

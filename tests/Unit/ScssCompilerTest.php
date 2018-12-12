@@ -2,24 +2,31 @@
 
 namespace Newride\Scss\Tests\Unit;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Newride\Scss\ScssCompiler;
 use Newride\Scss\Tests\TestCase;
 
-class ExampleTest extends TestCase
+class ScssCompilerTest extends TestCase
 {
-    /**
-     * A basic test example.
-     *
-     * @return void
-     */
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->compiler = app(ScssCompiler::class);
+    }
+
     public function testBasicTest()
     {
-        $compiler = app(ScssCompiler::class);
-
         $this->assertSame(
             'body a{color:red}',
-            $compiler->resource('assets/fixture.scss')
+            $this->compiler->resource('assets/fixture.scss')
         );
+    }
+
+    /**
+     * @expectedException \Newride\Scss\Exception\FileNotFound
+     */
+    public function testNonExistentFile()
+    {
+        $this->compiler->resource('assets/non-existent.scss');
     }
 }

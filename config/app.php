@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -120,7 +119,6 @@ return [
     */
 
     'providers' => [
-
         /*
          * Laravel Framework Service Providers...
          */
@@ -159,7 +157,6 @@ return [
         // Newride\Scss\App\Providers\BroadcastServiceProvider::class,
         Newride\Scss\App\Providers\EventServiceProvider::class,
         Newride\Scss\App\Providers\RouteServiceProvider::class,
-
     ],
 
     /*
@@ -174,7 +171,6 @@ return [
     */
 
     'aliases' => [
-
         'App' => Illuminate\Support\Facades\App::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,
         'Auth' => Illuminate\Support\Facades\Auth::class,
@@ -210,7 +206,5 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
 
         'Scss' => Newride\Scss\Facades\Scss::class,
-
     ],
-
 ];

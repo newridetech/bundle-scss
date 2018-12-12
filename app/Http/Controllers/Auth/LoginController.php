@@ -2,8 +2,8 @@
 
 namespace Newride\Scss\App\Http\Controllers\Auth;
 
-use Newride\Scss\App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Newride\Scss\App\Http\Controllers\Controller;
 
 class LoginController extends Controller
 {
@@ -29,8 +29,6 @@ class LoginController extends Controller
 
     /**
      * Create a new controller instance.
-     *
-     * @return void
      */
     public function __construct()
     {
